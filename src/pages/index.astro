@@ -1,36 +1,99 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
+---
+// src/pages/index.astro
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sunny Software Digital - Single Dads Toolkit</title>
+  </head>
+  <body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-800 p-8 rounded-xl shadow-lg border border-slate-700">
+      <h1 class="text-2xl font-bold mb-2 text-center">Essential Guides, Planners & Support for Single Dads</h1>
+      <p class="text-slate-400 text-sm mb-6 text-center">Enter your email and select your toolkit to get instant access.</p>
+      
+      <form id="fulfillment-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1" for="email">Email Address</label>
+          <input 
+            type="email" 
+            id="email" 
+            required 
+            placeholder="you@example.com" 
+            class="w-full px-4 py-2 rounded bg-slate-900 border border-slate-600 focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+        
+        <div>
+          <label class="block text-sm font-medium mb-1" for="product">Selected Product / Toolkit</label>
+          <select 
+            id="product" 
+            class="w-full px-4 py-2 rounded bg-slate-900 border border-slate-600 focus:outline-none focus:border-indigo-500"
+          >
+            <option value="Single Dad Starter Guide">Single Dad Starter Guide & Planner</option>
+            <option value="Cinematic Portrait Prompt Guide">Cinematic Portrait Prompt Guide</option>
+            <option value="Complete Digital Toolkit">Complete Digital Toolkit</option>
+          </select>
+        </div>
 
-// Enable CORS for your GitHub Pages frontend and local testing
-app.use(cors({
-  origin: [
-    'https://mglivelaughplay086-ui.github.io',
-    'http://localhost:4321'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+        <button 
+          type="submit" 
+          id="submit-btn"
+          class="w-full py-3 bg-indigo-600 hover:bg-indigo-500 rounded font-semibold transition duration-200"
+        >
+          Get Instant Access
+        </button>
+      </form>
 
-app.use(express.json());
+      <div id="status-message" class="mt-4 text-center text-sm hidden"></div>
+    </div>
 
-// Basic health check route
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date() });
-});
+    <script>
+      const form = document.getElementById('fulfillment-form') as HTMLFormElement;
+      const statusDiv = document.getElementById('status-message') as HTMLDivElement;
+      const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
 
-// Handle lead capture / order fulfillment form submissions
-app.post('/api/fulfill-order', (req, res) => {
-  const { email, product } = req.body;
-  console.log(`Received submission for email: ${email}, toolkit: ${product}`);
-  res.json({ 
-    success: true, 
-    message: 'Access granted successfully!',
-    email: email 
-  });
-});
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const emailInput = document.getElementById('email') as HTMLInputElement;
+        const productSelect = document.getElementById('product') as HTMLSelectElement;
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+        const email = emailInput.value;
+        const product = productSelect.value;
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+        statusDiv.classList.remove('hidden', 'text-red-400', 'text-green-400');
+        statusDiv.textContent = 'Connecting to server... (Render may take up to 30s to wake up)';
+
+        try {
+          const response = await fetch('https://digital-fulfillment-backend.onrender.com/api/fulfill-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, product })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            statusDiv.classList.add('text-green-400');
+            statusDiv.textContent = data.message || 'Success! Check your email for access.';
+            form.reset();
+          } else {
+            throw new Error(data.message || 'Submission failed');
+          }
+        } catch (err: any) {
+          statusDiv.classList.add('text-red-400');
+          statusDiv.textContent = 'Error: Failed to fetch';
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Get Instant Access';
+        }
+      });
+    </script>
+  </body>
+</html>
