@@ -16,6 +16,7 @@
   "type": "commonjs",
   "dependencies": {
     "astro": "^7.4.12",
+    "cors": "^2.8.6",
     "express": "^5.3.0"
   }
 }
