@@ -1,19 +1,21 @@
 const express = require('express');
+const cors = require('cors');
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.json());
 
-// Serve static files (index.html, CSS, client-side JS) from the current folder
+// Serve static frontend files
 app.use(express.static(path.join(__dirname)));
 
-// Fallback root route in case static file serving needs a direct index catch
+// Root homepage route
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Your fulfillment API endpoint
+// Fulfillment API endpoint
 app.post('/api/fulfill-order', (req, res) => {
   res.json({ success: true, message: 'Order fulfilled successfully' });
 });
