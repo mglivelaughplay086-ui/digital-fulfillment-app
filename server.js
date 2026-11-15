@@ -1,36 +1,23 @@
 const express = require('express');
-const cors = require('cors');
+const path = require('path');
 const app = express();
-
-// Enable CORS for your GitHub Pages frontend and local testing
-app.use(cors({
-  origin: [
-    'https://mglivelaughplay086-ui.github.io',
-    'http://localhost:4321'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
-// Basic health check route
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date() });
+// Serve static files (index.html, CSS, client-side JS) from the current folder
+app.use(express.static(path.join(__dirname)));
+
+// Fallback root route in case static file serving needs a direct index catch
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Handle lead capture / order fulfillment form submissions
+// Your fulfillment API endpoint
 app.post('/api/fulfill-order', (req, res) => {
-  const { email, product } = req.body;
-  console.log(`Received submission for email: ${email}, toolkit: ${product}`);
-  res.json({ 
-    success: true, 
-    message: 'Access granted successfully!',
-    email: email 
-  });
+  res.json({ success: true, message: 'Order fulfilled successfully' });
 });
 
-const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
